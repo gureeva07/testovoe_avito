@@ -1,0 +1,26 @@
+services:
+
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      # данные qdrant сохраняются на диск — при перезапуске индекс не теряется
+      - qdrant_data:/qdrant/storage
+
+  solution:
+    build: .
+    depends_on:
+      - qdrant
+    volumes:
+      # монтирую папку с данными и папку куда сохранится answer.csv
+      - ./candidate_data:/app/candidate_data
+      - .:/app
+      # кэш моделей сохраняется между перезапусками — не качаем каждый раз заново
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  qdrant_data:
+  hf_cache:
